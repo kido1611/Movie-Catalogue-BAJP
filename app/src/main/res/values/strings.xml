@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Movie Catalogue</string>
+    <string name="poster">Poster</string>
+    <string name="rating_placeholder">Rating %s</string>
+    <string name="release_at_placeholder">Rilis tanggal %s</string>
+    <string name="language_placeholder">Bahasa %s</string>
+    <string name="movies_title">Movies</string>
+    <string name="tvs_title">Tv Shows</string>
+    <string name="description">Deskripsi</string>
+    <string name="share">Bagikan</string>
+    <string name="share_now">Bagikan sekarang</string>
+    <string name="share_movie_placeholder">Lihat detail, sinopsis, atau ulasan film %s diaplikasi Movie Catalogue sekarang</string>
+</resources>
