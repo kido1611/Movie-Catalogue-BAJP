@@ -38,12 +38,10 @@ class MoviesFragment : Fragment() {
         val movieAdapter = MovieListAdapter()
         movieAdapter.setMovieList(movies)
 
-        binding.apply {
-            rvMovies.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = movieAdapter
-                setHasFixedSize(true)
-            }
+        binding.rvMovies.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = movieAdapter
+            setHasFixedSize(true)
         }
     }
 

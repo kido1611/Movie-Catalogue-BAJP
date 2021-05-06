@@ -39,12 +39,10 @@ class TvsFragment : Fragment() {
         val movieAdapter = MovieListAdapter()
         movieAdapter.setMovieList(tvs)
 
-        binding.apply {
-            rvTvs.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = movieAdapter
-                setHasFixedSize(true)
-            }
+        binding.rvTvs.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = movieAdapter
+            setHasFixedSize(true)
         }
     }
 

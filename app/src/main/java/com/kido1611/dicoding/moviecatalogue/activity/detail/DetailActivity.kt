@@ -24,11 +24,11 @@ class DetailActivity : AppCompatActivity() {
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.apply {
-            toolbar.setNavigationOnClickListener {
+        binding.toolbar.apply {
+            setNavigationOnClickListener {
                 onBackPressed()
             }
-            toolbar.setOnMenuItemClickListener {
+            setOnMenuItemClickListener {
                 when (it.itemId) {
                     R.id.share_menu -> {
                         ShareCompat
