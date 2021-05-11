@@ -76,6 +76,7 @@ class DetailViewModelTest {
         assertTrue(result.value is DetailUiState.Success)
 
         val movie = (result.value as DetailUiState.Success).movie
+        assertEquals(true, movie.isMovie())
         assertEquals(dummyMovie.title, movie.title)
         assertEquals(dummyMovie.id, movie.id)
 
@@ -93,6 +94,7 @@ class DetailViewModelTest {
         assertTrue(result.value is DetailUiState.Success)
 
         val tv = (result.value as DetailUiState.Success).movie
+        assertEquals(false, tv.isMovie())
         assertEquals(dummyTv.title, tv.title)
         assertEquals(dummyTv.id, tv.id)
 

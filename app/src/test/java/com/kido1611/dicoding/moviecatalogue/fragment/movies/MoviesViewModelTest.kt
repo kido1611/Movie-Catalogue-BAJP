@@ -11,9 +11,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import junit.framework.TestCase.*
-
 import kotlinx.coroutines.runBlocking
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,28 +28,22 @@ class MoviesViewModelTest {
     @Mock
     private lateinit var repository: MovieRepository
 
-    private lateinit var dummySuccess: DiscoverUiState
+    @Mock
+    private lateinit var observer: Observer<DiscoverUiState>
 
-    @Before
-    fun setup() {
+    @Test
+    fun testGetMovies() {
         val dummyMovies = DataDummy.generateDummyMovies()
-        dummySuccess = DiscoverUiState.Success(dummyMovies)
+        val dummySuccess = DiscoverUiState.Success(dummyMovies)
         val dummyResult = MutableLiveData<DiscoverUiState>()
         dummyResult.value = dummySuccess
 
         repository = mock()
         runBlocking {
             whenever(repository.getDiscoverMovie()).thenReturn(dummyResult)
-
         }
         viewModel = MoviesViewModel(repository)
-    }
 
-    @Mock
-    private lateinit var observer: Observer<DiscoverUiState>
-
-    @Test
-    fun testGetMovies() {
         val result: LiveData<DiscoverUiState> = viewModel.list
         assertNotNull(result)
         verify(repository).getDiscoverMovie()
@@ -61,12 +53,25 @@ class MoviesViewModelTest {
         val movies = movieList.list
         assertEquals(10, movies.size)
 
+        val movie = movies[0]
+        assertEquals(true, movie.isMovie())
+
         viewModel.list.observeForever(observer)
         verify(observer).onChanged(dummySuccess)
     }
 
     @Test
-    fun testIsRealMovieOnGetMovies() {
+    fun testGetEmptyMovies() {
+        val dummySuccessEmpty = DiscoverUiState.Success(emptyList())
+        val dummyResult = MutableLiveData<DiscoverUiState>()
+        dummyResult.value = dummySuccessEmpty
+
+        repository = mock()
+        runBlocking {
+            whenever(repository.getDiscoverMovie()).thenReturn(dummyResult)
+        }
+        viewModel = MoviesViewModel(repository)
+
         val result: LiveData<DiscoverUiState> = viewModel.list
         assertNotNull(result)
         verify(repository).getDiscoverMovie()
@@ -74,7 +79,9 @@ class MoviesViewModelTest {
 
         val movieList = result.value as DiscoverUiState.Success
         val movies = movieList.list
-        val movie = movies[0]
-        assertEquals(true, movie.isMovie())
+        assertEquals(0, movies.size)
+
+        viewModel.list.observeForever(observer)
+        verify(observer).onChanged(dummySuccessEmpty)
     }
 }
