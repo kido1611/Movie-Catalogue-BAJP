@@ -4,6 +4,7 @@ data class Movie(
     var backdrop_path: String?,
     var first_air_date: String?,        // TV
     var genre_ids: List<Int>?,
+    var genres: List<Genre>?,
     var id: Int,
     var name: String?,                  // TV
     var original_language: String?,

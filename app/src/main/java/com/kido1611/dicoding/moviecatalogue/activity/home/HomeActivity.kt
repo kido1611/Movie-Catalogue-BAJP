@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.tabs.TabLayoutMediator
 import com.kido1611.dicoding.moviecatalogue.R
 import com.kido1611.dicoding.moviecatalogue.databinding.ActivityHomeBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,6 +19,7 @@ class HomeActivity : AppCompatActivity() {
         val adapter = FragmentAdapter(this)
         binding.apply {
             vp.adapter = adapter
+            vp.isUserInputEnabled = false
             vp.offscreenPageLimit = 2
             TabLayoutMediator(tabs, vp) { tab, position ->
                 tab.text = when (position) {

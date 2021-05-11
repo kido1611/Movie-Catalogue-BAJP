@@ -4,19 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.kido1611.dicoding.moviecatalogue.data.source.DiscoverUiState
 import com.kido1611.dicoding.moviecatalogue.databinding.MoviesFragmentBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MoviesFragment : Fragment() {
 
     companion object {
         fun newInstance(): MoviesFragment = MoviesFragment()
     }
 
-    private lateinit var viewModel: MoviesViewModel
+    private val viewModel: MoviesViewModel by viewModels()
     private lateinit var binding: MoviesFragmentBinding
+    private lateinit var movieAdapter: MovieListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -28,20 +33,65 @@ class MoviesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.NewInstanceFactory()
-        )[MoviesViewModel::class.java]
+        movieAdapter = MovieListAdapter()
 
-        val movies = viewModel.list()
+        binding.apply {
+            rvMovies.apply {
+                layoutManager = LinearLayoutManager(requireContext())
+                adapter = movieAdapter
+                setHasFixedSize(true)
+            }
+            btnRetry.setOnClickListener {
+                observe()
+            }
+        }
 
-        val movieAdapter = MovieListAdapter()
-        movieAdapter.setMovieList(movies)
+        observe()
+    }
 
-        binding.rvMovies.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = movieAdapter
-            setHasFixedSize(true)
+    private fun observe() {
+        viewModel.list.removeObservers(viewLifecycleOwner)
+        viewModel.list.observe(viewLifecycleOwner) {
+            when (it) {
+                is DiscoverUiState.Error -> {
+                    showError(it.message)
+                }
+                is DiscoverUiState.Loading -> {
+                    showLoading()
+                }
+                is DiscoverUiState.Success -> {
+                    showSuccess()
+
+                    movieAdapter.setMovieList(it.list)
+                    movieAdapter.notifyDataSetChanged()
+                }
+            }
+        }
+    }
+
+    private fun showSuccess() {
+        binding.apply {
+            progressBar.isVisible = false
+            groupError.isVisible = false
+            rvMovies.isVisible = true
+        }
+    }
+
+    private fun showLoading() {
+        binding.apply {
+            progressBar.isVisible = true
+            groupError.isVisible = false
+            rvMovies.isVisible = false
+        }
+    }
+
+    private fun showError(message: String) {
+        binding.apply {
+            progressBar.isVisible = false
+            groupError.isVisible = true
+            rvMovies.isVisible = false
+
+            tvMessage.text = message
         }
     }
 

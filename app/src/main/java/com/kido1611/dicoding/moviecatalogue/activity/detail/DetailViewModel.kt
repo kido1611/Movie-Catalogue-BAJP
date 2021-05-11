@@ -1,28 +1,34 @@
 package com.kido1611.dicoding.moviecatalogue.activity.detail
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.kido1611.dicoding.moviecatalogue.model.Movie
-import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
+import com.kido1611.dicoding.moviecatalogue.data.source.DetailUiState
+import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class DetailViewModel : ViewModel() {
+@HiltViewModel
+class DetailViewModel @Inject constructor(
+    private val repository: MovieRepository
+) : ViewModel() {
 
-    private var _isMovie: Boolean = true
-    private var _movieId: Int = 0
+    private lateinit var movieQuery: MovieQuery
 
     fun setMovie(isMovie: Boolean, movieId: Int) {
-        _isMovie = isMovie
-        _movieId = movieId
+        movieQuery = MovieQuery(
+            isMovie = isMovie,
+            id = movieId
+        )
     }
 
-    fun getMovie(): Movie? {
-        val movies = if (_isMovie) {
-            DataDummy.generateDummyMovies()
-        } else {
-            DataDummy.generateDummyTv()
-        }
-
-        return movies.firstOrNull {
-            it.id == _movieId
-        }
+    fun getMovie(): LiveData<DetailUiState> = if (movieQuery.isMovie) {
+        repository.getMovieById(movieQuery.id)
+    } else {
+        repository.getTvById(movieQuery.id)
     }
 }
+
+data class MovieQuery(
+    val isMovie: Boolean,
+    val id: Int
+)

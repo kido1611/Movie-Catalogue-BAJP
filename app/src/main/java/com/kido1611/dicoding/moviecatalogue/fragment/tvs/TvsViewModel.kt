@@ -1,9 +1,14 @@
 package com.kido1611.dicoding.moviecatalogue.fragment.tvs
 
 import androidx.lifecycle.ViewModel
-import com.kido1611.dicoding.moviecatalogue.model.Movie
-import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
+import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class TvsViewModel : ViewModel() {
-    fun list(): List<Movie> = DataDummy.generateDummyTv()
+@HiltViewModel
+class TvsViewModel @Inject constructor(
+    repository: MovieRepository
+) : ViewModel() {
+
+    val list = repository.getDiscoverTv()
 }

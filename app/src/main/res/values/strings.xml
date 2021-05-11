@@ -10,4 +10,7 @@
     <string name="share">Bagikan</string>
     <string name="share_now">Bagikan sekarang</string>
     <string name="share_movie_placeholder">Lihat detail, sinopsis, atau ulasan film %s diaplikasi Movie Catalogue sekarang</string>
+    <string name="retry">Ulang</string>
+    <string name="backdrop_movie">Backdrop movie</string>
+    <string name="genre">Genre</string>
 </resources>
