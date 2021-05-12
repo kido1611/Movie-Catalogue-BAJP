@@ -2,8 +2,7 @@ package com.kido1611.dicoding.moviecatalogue.data.source.remote
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.kido1611.dicoding.moviecatalogue.data.source.DetailUiState
-import com.kido1611.dicoding.moviecatalogue.data.source.DiscoverUiState
+import com.kido1611.dicoding.moviecatalogue.data.source.UIState
 import com.kido1611.dicoding.moviecatalogue.model.Movie
 import com.kido1611.dicoding.moviecatalogue.model.RemoteDiscoverResponse
 import com.kido1611.dicoding.moviecatalogue.utils.EspressoIdlingResource
@@ -17,10 +16,10 @@ import javax.inject.Singleton
 class RemoteDataSource @Inject constructor(
     private val service: TMDBService
 ) {
-    fun getDiscoverMovie(): LiveData<DiscoverUiState> {
+    fun getDiscoverMovie(): LiveData<UIState<List<Movie>>> {
         EspressoIdlingResource.increment()
-        val result = MutableLiveData<DiscoverUiState>()
-        result.value = DiscoverUiState.Loading(null)
+        val result = MutableLiveData<UIState<List<Movie>>>()
+        result.value = UIState.Loading
 
         service.getDiscoverMovie(1)
             .enqueue(object : Callback<RemoteDiscoverResponse> {
@@ -32,26 +31,26 @@ class RemoteDataSource @Inject constructor(
                     if (response.isSuccessful) {
                         val data = response.body()?.results
                         data?.let {
-                            result.value = DiscoverUiState.Success(it)
+                            result.value = UIState.Success(it)
                         }
                     } else {
-                        result.value = DiscoverUiState.Error(response.message())
+                        result.value = UIState.Error(response.message())
                     }
                 }
 
                 override fun onFailure(call: Call<RemoteDiscoverResponse>, t: Throwable) {
                     EspressoIdlingResource.decrement()
-                    result.value = DiscoverUiState.Error(t.message.toString())
+                    result.value = UIState.Error(t.message.toString())
                 }
 
             })
         return result
     }
 
-    fun getDiscoverTv(): LiveData<DiscoverUiState> {
+    fun getDiscoverTv(): LiveData<UIState<List<Movie>>> {
         EspressoIdlingResource.increment()
-        val result = MutableLiveData<DiscoverUiState>()
-        result.value = DiscoverUiState.Loading(null)
+        val result = MutableLiveData<UIState<List<Movie>>>()
+        result.value = UIState.Loading
 
         service.getDiscoverTv(1)
             .enqueue(object : Callback<RemoteDiscoverResponse> {
@@ -63,26 +62,26 @@ class RemoteDataSource @Inject constructor(
                     if (response.isSuccessful) {
                         val data = response.body()?.results
                         data?.let {
-                            result.value = DiscoverUiState.Success(it)
+                            result.value = UIState.Success(it)
                         }
                     } else {
-                        result.value = DiscoverUiState.Error(response.message())
+                        result.value = UIState.Error(response.message())
                     }
                 }
 
                 override fun onFailure(call: Call<RemoteDiscoverResponse>, t: Throwable) {
                     EspressoIdlingResource.decrement()
-                    result.value = DiscoverUiState.Error(t.message.toString())
+                    result.value = UIState.Error(t.message.toString())
                 }
 
             })
         return result
     }
 
-    fun getMovieById(id: Int): LiveData<DetailUiState> {
+    fun getMovieById(id: Int): LiveData<UIState<Movie>> {
         EspressoIdlingResource.increment()
-        val result = MutableLiveData<DetailUiState>()
-        result.value = DetailUiState.Loading(null)
+        val result = MutableLiveData<UIState<Movie>>()
+        result.value = UIState.Loading
 
         service.getMovieById(id)
             .enqueue(object : Callback<Movie> {
@@ -90,42 +89,42 @@ class RemoteDataSource @Inject constructor(
                     EspressoIdlingResource.decrement()
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            result.value = DetailUiState.Success(it)
+                            result.value = UIState.Success(it)
                         }
                     } else {
-                        result.value = DetailUiState.Error(response.message())
+                        result.value = UIState.Error(response.message())
                     }
                 }
 
                 override fun onFailure(call: Call<Movie>, t: Throwable) {
                     EspressoIdlingResource.decrement()
-                    result.value = DetailUiState.Error(t.message.toString())
+                    result.value = UIState.Error(t.message.toString())
                 }
 
             })
         return result
     }
 
-    fun getTvById(id: Int): LiveData<DetailUiState> {
+    fun getTvById(id: Int): LiveData<UIState<Movie>> {
         EspressoIdlingResource.increment()
-        val result = MutableLiveData<DetailUiState>()
-        result.value = DetailUiState.Loading(null)
+        val result = MutableLiveData<UIState<Movie>>()
+        result.value = UIState.Loading
 
         service.getTvById(id).enqueue(object : Callback<Movie> {
             override fun onResponse(call: Call<Movie>, response: Response<Movie>) {
                 EspressoIdlingResource.decrement()
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        result.value = DetailUiState.Success(it)
+                        result.value = UIState.Success(it)
                     }
                 } else {
-                    result.value = DetailUiState.Error(response.message())
+                    result.value = UIState.Error(response.message())
                 }
             }
 
             override fun onFailure(call: Call<Movie>, t: Throwable) {
                 EspressoIdlingResource.decrement()
-                result.value = DetailUiState.Error(t.message.toString())
+                result.value = UIState.Error(t.message.toString())
             }
 
         })

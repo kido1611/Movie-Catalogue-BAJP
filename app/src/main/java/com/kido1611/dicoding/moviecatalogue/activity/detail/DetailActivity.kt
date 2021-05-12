@@ -6,9 +6,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
 import androidx.core.view.isVisible
 import com.kido1611.dicoding.moviecatalogue.R
-import com.kido1611.dicoding.moviecatalogue.data.source.DetailUiState
+import com.kido1611.dicoding.moviecatalogue.data.source.UIState
 import com.kido1611.dicoding.moviecatalogue.databinding.ActivityDetailBinding
 import com.kido1611.dicoding.moviecatalogue.extension.loadImageFromTMDB
+import com.kido1611.dicoding.moviecatalogue.extension.toReadableDateFormat
 import com.kido1611.dicoding.moviecatalogue.model.Movie
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -65,15 +66,15 @@ class DetailActivity : AppCompatActivity() {
         viewModel.getMovie()
             .observe(this) {
                 when (it) {
-                    is DetailUiState.Error -> {
+                    is UIState.Error -> {
                         showError(it.message)
                     }
-                    is DetailUiState.Loading -> {
+                    UIState.Loading -> {
                         showLoading()
                     }
-                    is DetailUiState.Success -> {
+                    is UIState.Success -> {
                         showSuccess()
-                        initView(it.movie)
+                        initView(it.data)
                     }
                 }
             }
@@ -94,7 +95,10 @@ class DetailActivity : AppCompatActivity() {
 
                 tvTitle.text = movie.getMovieTitle()
                 tvReleaseDate.text =
-                    getString(R.string.release_at_placeholder, movie.getMovieReleaseDate())
+                    getString(
+                        R.string.release_at_placeholder,
+                        movie.getMovieReleaseDate()?.toReadableDateFormat()
+                    )
                 tvRating.text =
                     getString(R.string.rating_placeholder, movie.vote_average.toString())
                 tvLanguage.text = getString(R.string.language_placeholder, movie.original_language)

@@ -4,8 +4,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.kido1611.dicoding.moviecatalogue.data.source.DetailUiState
 import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
+import com.kido1611.dicoding.moviecatalogue.data.source.UIState
+import com.kido1611.dicoding.moviecatalogue.model.Movie
 import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -39,23 +40,23 @@ class DetailViewModelTest {
     private lateinit var repository: MovieRepository
 
     @Mock
-    private lateinit var observer: Observer<DetailUiState>
+    private lateinit var observer: Observer<UIState<Movie>>
 
-    private lateinit var dummyMovieSuccess: DetailUiState
-    private lateinit var dummyTvSuccess: DetailUiState
-    private lateinit var dummyFailed: DetailUiState
+    private lateinit var dummyMovieSuccess: UIState.Success<Movie>
+    private lateinit var dummyTvSuccess: UIState.Success<Movie>
+    private lateinit var dummyFailed: UIState.Error
 
     @Before
     fun setup() {
-        val resultMovie = MutableLiveData<DetailUiState>()
-        dummyMovieSuccess = DetailUiState.Success(dummyMovie)
+        val resultMovie = MutableLiveData<UIState<Movie>>()
+        dummyMovieSuccess = UIState.Success(dummyMovie)
         resultMovie.value = dummyMovieSuccess
 
-        val resultTv = MutableLiveData<DetailUiState>()
-        dummyTvSuccess = DetailUiState.Success(dummyTv)
+        val resultTv = MutableLiveData<UIState<Movie>>()
+        dummyTvSuccess = UIState.Success(dummyTv)
         resultTv.value = dummyTvSuccess
 
-        dummyFailed = DetailUiState.Error("Error")
+        dummyFailed = UIState.Error("Error")
 
         repository = mock()
         runBlocking {
@@ -70,12 +71,12 @@ class DetailViewModelTest {
     fun testGetMovie() {
         viewModel.setMovie(true, movieId)
 
-        val result: LiveData<DetailUiState> = viewModel.getMovie()
+        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
         Assert.assertNotNull(result)
         verify(repository).getMovieById(movieId)
-        assertTrue(result.value is DetailUiState.Success)
+        assertTrue(result.value is UIState.Success)
 
-        val movie = (result.value as DetailUiState.Success).movie
+        val movie = (result.value as UIState.Success).data
         assertEquals(true, movie.isMovie())
         assertEquals(dummyMovie.title, movie.title)
         assertEquals(dummyMovie.id, movie.id)
@@ -88,12 +89,12 @@ class DetailViewModelTest {
     fun testGetTv() {
         viewModel.setMovie(false, tvId)
 
-        val result: LiveData<DetailUiState> = viewModel.getMovie()
+        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
         Assert.assertNotNull(result)
         verify(repository).getTvById(tvId)
-        assertTrue(result.value is DetailUiState.Success)
+        assertTrue(result.value is UIState.Success)
 
-        val tv = (result.value as DetailUiState.Success).movie
+        val tv = (result.value as UIState.Success).data
         assertEquals(false, tv.isMovie())
         assertEquals(dummyTv.title, tv.title)
         assertEquals(dummyTv.id, tv.id)
@@ -105,14 +106,14 @@ class DetailViewModelTest {
     @Test
     fun testMovieNotFound() {
         viewModel.setMovie(true, 112346)
-        val responseResult = MutableLiveData<DetailUiState>()
-        responseResult.value = DetailUiState.Error("Error")
+        val responseResult = MutableLiveData<UIState<Movie>>()
+        responseResult.value = UIState.Error("Error")
 
         whenever(repository.getMovieById(112346)).thenReturn(responseResult)
-        val result: LiveData<DetailUiState> = viewModel.getMovie()
+        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
         Assert.assertNotNull(result)
         verify(repository).getMovieById(112346)
-        assertTrue(result.value is DetailUiState.Error)
+        assertTrue(result.value is UIState.Error)
 
         viewModel.getMovie().observeForever(observer)
         verify(observer).onChanged(dummyFailed)
@@ -121,14 +122,14 @@ class DetailViewModelTest {
     @Test
     fun testTvNotFound() {
         viewModel.setMovie(false, 112346)
-        val responseResult = MutableLiveData<DetailUiState>()
-        responseResult.value = DetailUiState.Error("Error")
+        val responseResult = MutableLiveData<UIState<Movie>>()
+        responseResult.value = UIState.Error("Error")
 
         whenever(repository.getTvById(112346)).thenReturn(responseResult)
-        val result: LiveData<DetailUiState> = viewModel.getMovie()
+        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
         Assert.assertNotNull(result)
         verify(repository).getTvById(112346)
-        assertTrue(result.value is DetailUiState.Error)
+        assertTrue(result.value is UIState.Error)
 
         viewModel.getMovie().observeForever(observer)
         verify(observer).onChanged(dummyFailed)

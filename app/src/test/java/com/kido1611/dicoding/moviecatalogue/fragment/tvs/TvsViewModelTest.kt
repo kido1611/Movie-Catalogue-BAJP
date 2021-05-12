@@ -4,8 +4,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.kido1611.dicoding.moviecatalogue.data.source.DiscoverUiState
 import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
+import com.kido1611.dicoding.moviecatalogue.data.source.UIState
+import com.kido1611.dicoding.moviecatalogue.model.Movie
 import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -29,13 +30,13 @@ class TvsViewModelTest {
     private lateinit var repository: MovieRepository
 
     @Mock
-    private lateinit var observer: Observer<DiscoverUiState>
+    private lateinit var observer: Observer<UIState<List<Movie>>>
 
     @Test
     fun testGetMovies() {
         val dummyTvs = DataDummy.generateDummyTv()
-        val dummySuccess = DiscoverUiState.Success(dummyTvs)
-        val dummyResult = MutableLiveData<DiscoverUiState>()
+        val dummySuccess = UIState.Success(dummyTvs)
+        val dummyResult = MutableLiveData<UIState<List<Movie>>>()
         dummyResult.value = dummySuccess
 
         repository = mock()
@@ -44,13 +45,13 @@ class TvsViewModelTest {
         }
         viewModel = TvsViewModel(repository)
 
-        val result: LiveData<DiscoverUiState> = viewModel.list
+        val result: LiveData<UIState<List<Movie>>> = viewModel.list
         TestCase.assertNotNull(result)
         verify(repository).getDiscoverTv()
-        TestCase.assertTrue(result.value is DiscoverUiState.Success)
+        TestCase.assertTrue(result.value is UIState.Success)
 
-        val tvList = result.value as DiscoverUiState.Success
-        val tvs = tvList.list
+        val tvList = result.value as UIState.Success
+        val tvs = tvList.data
         TestCase.assertEquals(10, tvs.size)
 
         val tv = tvs[0]
@@ -62,8 +63,8 @@ class TvsViewModelTest {
 
     @Test
     fun testGetEmptyTvs() {
-        val dummySuccessEmpty = DiscoverUiState.Success(emptyList())
-        val dummyResult = MutableLiveData<DiscoverUiState>()
+        val dummySuccessEmpty = UIState.Success(emptyList<Movie>())
+        val dummyResult = MutableLiveData<UIState<List<Movie>>>()
         dummyResult.value = dummySuccessEmpty
 
         repository = mock()
@@ -72,13 +73,13 @@ class TvsViewModelTest {
         }
         viewModel = TvsViewModel(repository)
 
-        val result: LiveData<DiscoverUiState> = viewModel.list
+        val result: LiveData<UIState<List<Movie>>> = viewModel.list
         TestCase.assertNotNull(result)
         verify(repository).getDiscoverTv()
-        TestCase.assertTrue(result.value is DiscoverUiState.Success)
+        TestCase.assertTrue(result.value is UIState.Success)
 
-        val tvList = result.value as DiscoverUiState.Success
-        val tvs = tvList.list
+        val tvList = result.value as UIState.Success
+        val tvs = tvList.data
         TestCase.assertEquals(0, tvs.size)
 
         viewModel.list.observeForever(observer)

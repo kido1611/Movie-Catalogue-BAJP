@@ -8,7 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.kido1611.dicoding.moviecatalogue.data.source.DiscoverUiState
+import com.kido1611.dicoding.moviecatalogue.data.source.UIState
 import com.kido1611.dicoding.moviecatalogue.databinding.TvsFragmentBinding
 import com.kido1611.dicoding.moviecatalogue.fragment.movies.MovieListAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,16 +45,16 @@ class TvsFragment : Fragment() {
 
         viewModel.list.observe(viewLifecycleOwner) {
             when (it) {
-                is DiscoverUiState.Error -> {
+                is UIState.Error -> {
                     showError(it.message)
                 }
-                is DiscoverUiState.Loading -> {
+                UIState.Loading -> {
                     showLoading()
                 }
-                is DiscoverUiState.Success -> {
+                is UIState.Success -> {
                     showSuccess()
 
-                    movieAdapter.setMovieList(it.list)
+                    movieAdapter.setMovieList(it.data)
                     movieAdapter.notifyDataSetChanged()
                 }
             }

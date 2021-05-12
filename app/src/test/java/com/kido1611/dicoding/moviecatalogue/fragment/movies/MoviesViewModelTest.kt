@@ -4,8 +4,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.kido1611.dicoding.moviecatalogue.data.source.DiscoverUiState
 import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
+import com.kido1611.dicoding.moviecatalogue.data.source.UIState
+import com.kido1611.dicoding.moviecatalogue.model.Movie
 import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -29,13 +30,13 @@ class MoviesViewModelTest {
     private lateinit var repository: MovieRepository
 
     @Mock
-    private lateinit var observer: Observer<DiscoverUiState>
+    private lateinit var observer: Observer<UIState<List<Movie>>>
 
     @Test
     fun testGetMovies() {
         val dummyMovies = DataDummy.generateDummyMovies()
-        val dummySuccess = DiscoverUiState.Success(dummyMovies)
-        val dummyResult = MutableLiveData<DiscoverUiState>()
+        val dummySuccess = UIState.Success(dummyMovies)
+        val dummyResult = MutableLiveData<UIState<List<Movie>>>()
         dummyResult.value = dummySuccess
 
         repository = mock()
@@ -44,13 +45,13 @@ class MoviesViewModelTest {
         }
         viewModel = MoviesViewModel(repository)
 
-        val result: LiveData<DiscoverUiState> = viewModel.list
+        val result: LiveData<UIState<List<Movie>>> = viewModel.list
         assertNotNull(result)
         verify(repository).getDiscoverMovie()
-        assertTrue(result.value is DiscoverUiState.Success)
+        assertTrue(result.value is UIState.Success)
 
-        val movieList = result.value as DiscoverUiState.Success
-        val movies = movieList.list
+        val movieList = result.value as UIState.Success
+        val movies = movieList.data
         assertEquals(10, movies.size)
 
         val movie = movies[0]
@@ -62,8 +63,8 @@ class MoviesViewModelTest {
 
     @Test
     fun testGetEmptyMovies() {
-        val dummySuccessEmpty = DiscoverUiState.Success(emptyList())
-        val dummyResult = MutableLiveData<DiscoverUiState>()
+        val dummySuccessEmpty = UIState.Success(emptyList<Movie>())
+        val dummyResult = MutableLiveData<UIState<List<Movie>>>()
         dummyResult.value = dummySuccessEmpty
 
         repository = mock()
@@ -72,13 +73,13 @@ class MoviesViewModelTest {
         }
         viewModel = MoviesViewModel(repository)
 
-        val result: LiveData<DiscoverUiState> = viewModel.list
+        val result: LiveData<UIState<List<Movie>>> = viewModel.list
         assertNotNull(result)
         verify(repository).getDiscoverMovie()
-        assertTrue(result.value is DiscoverUiState.Success)
+        assertTrue(result.value is UIState.Success)
 
-        val movieList = result.value as DiscoverUiState.Success
-        val movies = movieList.list
+        val movieList = result.value as UIState.Success
+        val movies = movieList.data
         assertEquals(0, movies.size)
 
         viewModel.list.observeForever(observer)
