@@ -8,6 +8,7 @@ import com.kido1611.dicoding.moviecatalogue.R
 import com.kido1611.dicoding.moviecatalogue.activity.detail.DetailActivity
 import com.kido1611.dicoding.moviecatalogue.databinding.MovieListViewBinding
 import com.kido1611.dicoding.moviecatalogue.extension.loadImageFromTMDB
+import com.kido1611.dicoding.moviecatalogue.extension.toReadableDateFormat
 import com.kido1611.dicoding.moviecatalogue.model.Movie
 
 class MovieListViewHolder(
@@ -25,7 +26,7 @@ class MovieListViewHolder(
             tvDescription.text = movie.overview
             tvReleaseDate.text = root.context.getString(
                 R.string.release_at_placeholder,
-                movie.getMovieReleaseDate()
+                movie.getMovieReleaseDate()?.toReadableDateFormat()
             )
 
             ivPoster.loadImageFromTMDB(movie.poster_path)
