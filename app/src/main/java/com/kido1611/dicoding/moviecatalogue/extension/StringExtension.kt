@@ -3,7 +3,11 @@ package com.kido1611.dicoding.moviecatalogue.extension
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun String.toReadableDateFormat(): String {
+fun String?.toReadableDateFormat(): String? {
+    if (this.isNullOrEmpty()) {
+        return this
+    }
+
     val dateFormatGmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     dateFormatGmt.timeZone = TimeZone.getTimeZone("GMT")
 

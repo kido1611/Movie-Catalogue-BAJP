@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
 import com.kido1611.dicoding.moviecatalogue.data.source.UIState
-import com.kido1611.dicoding.moviecatalogue.model.Movie
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -22,7 +22,7 @@ class DetailViewModel @Inject constructor(
         )
     }
 
-    fun getMovie(): LiveData<UIState<Movie>> = if (movieQuery.isMovie) {
+    fun getMovie(): LiveData<UIState<MovieEntity>> = if (movieQuery.isMovie) {
         repository.getMovieById(movieQuery.id)
     } else {
         repository.getTvById(movieQuery.id)

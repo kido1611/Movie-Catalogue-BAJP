@@ -7,10 +7,15 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.kido1611.dicoding.moviecatalogue.data.source.UIState
+import com.kido1611.dicoding.moviecatalogue.R
+import com.kido1611.dicoding.moviecatalogue.adapter.LoadStateAdapter
 import com.kido1611.dicoding.moviecatalogue.databinding.MoviesFragmentBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MoviesFragment : Fragment() {
@@ -21,7 +26,7 @@ class MoviesFragment : Fragment() {
 
     private val viewModel: MoviesViewModel by viewModels()
     private lateinit var binding: MoviesFragmentBinding
-    private lateinit var movieAdapter: MovieListAdapter
+    private lateinit var movieAdapter: MoviePagingAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,40 +36,57 @@ class MoviesFragment : Fragment() {
         return binding.root
     }
 
+    @ExperimentalPagingApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        movieAdapter = MovieListAdapter()
+        movieAdapter = MoviePagingAdapter()
+        movieAdapter.addLoadStateListener {
+            val isRefresh =
+                it.refresh is LoadState.Loading || it.mediator?.refresh is LoadState.Loading
+            val isError = it.refresh is LoadState.Error || it.mediator?.refresh is LoadState.Error
+
+            if (!isRefresh && !isError) {
+                showSuccess()
+            } else if (isRefresh) {
+                showLoading()
+            } else if (isError) {
+                if (movieAdapter.itemCount == 0) {
+                    showError(getString(R.string.load_state_error))
+                } else {
+                    showSuccess()
+                }
+            }
+
+            binding.swipeRefreshLayout.isRefreshing =
+                isRefresh && binding.swipeRefreshLayout.isRefreshing
+        }
 
         binding.apply {
             rvMovies.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = movieAdapter
+                    .withLoadStateFooter(LoadStateAdapter {
+                        movieAdapter.retry()
+                    })
                 setHasFixedSize(true)
             }
+            swipeRefreshLayout.setOnRefreshListener {
+                movieAdapter.refresh()
+            }
             btnRetry.setOnClickListener {
-                observe()
+                movieAdapter.retry()
             }
         }
 
         observe()
+        viewModel.loadList()
     }
 
+    @ExperimentalPagingApi
     private fun observe() {
-        viewModel.list.removeObservers(viewLifecycleOwner)
-        viewModel.list.observe(viewLifecycleOwner) {
-            when (it) {
-                is UIState.Error -> {
-                    showError(it.message)
-                }
-                UIState.Loading -> {
-                    showLoading()
-                }
-                is UIState.Success -> {
-                    showSuccess()
-
-                    movieAdapter.setMovieList(it.data)
-                    movieAdapter.notifyDataSetChanged()
-                }
+        viewModel.list().observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
+                movieAdapter.submitData(it)
             }
         }
     }

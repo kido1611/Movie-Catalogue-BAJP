@@ -1,11 +1,18 @@
-package com.kido1611.dicoding.moviecatalogue.model
+package com.kido1611.dicoding.moviecatalogue.data.source.local.entity
 
-data class Movie(
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "movies"
+)
+data class MovieEntity(
     var backdrop_path: String?,
     var first_air_date: String?,        // TV
-    var genre_ids: List<Int>?,
-    var genres: List<Genre>?,
-    var id: Int,
+    var genres: String?,
+    var is_movie: Boolean,
+    @PrimaryKey(autoGenerate = false)
+    var movie_id: Int,
     var name: String?,                  // TV
     var original_language: String?,
     var overview: String?,
@@ -14,8 +21,10 @@ data class Movie(
     var release_date: String?,          // Movie
     var title: String?,                 // Movie
     var vote_average: Double?,
-    var vote_count: Int?
+    var vote_count: Int?,
+    var list_id: Long? = null
 ) {
+
     fun isMovie(): Boolean = title != null
 
     fun getMovieTitle(): String? = if (isMovie()) {
@@ -30,3 +39,4 @@ data class Movie(
         first_air_date
     }
 }
+

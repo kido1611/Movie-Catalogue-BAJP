@@ -1,16 +1,17 @@
 package com.kido1611.dicoding.moviecatalogue.activity.detail
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
 import androidx.core.view.isVisible
 import com.kido1611.dicoding.moviecatalogue.R
 import com.kido1611.dicoding.moviecatalogue.data.source.UIState
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
 import com.kido1611.dicoding.moviecatalogue.databinding.ActivityDetailBinding
 import com.kido1611.dicoding.moviecatalogue.extension.loadImageFromTMDB
 import com.kido1611.dicoding.moviecatalogue.extension.toReadableDateFormat
-import com.kido1611.dicoding.moviecatalogue.model.Movie
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,7 +23,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityDetailBinding
-    private lateinit var currentMovie: Movie
+    private lateinit var currentMovie: MovieEntity
     private val viewModel: DetailViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,20 +68,37 @@ class DetailActivity : AppCompatActivity() {
             .observe(this) {
                 when (it) {
                     is UIState.Error -> {
-                        showError(it.message)
-                    }
-                    UIState.Loading -> {
-                        showLoading()
+                        if (it.data != null) {
+                            showSuccess()
+                            initView(it.data)
+
+                            Toast.makeText(
+                                this,
+                                getString(R.string.failed_update_data),
+                                Toast.LENGTH_LONG
+                            )
+                                .show()
+                        } else {
+                            showError(it.message)
+                        }
                     }
                     is UIState.Success -> {
                         showSuccess()
                         initView(it.data)
                     }
+                    is UIState.Loading -> {
+                        if (it.data != null) {
+                            showSuccess()
+                            initView(it.data)
+                        } else {
+                            showLoading()
+                        }
+                    }
                 }
             }
     }
 
-    private fun initView(movie: Movie) {
+    private fun initView(movie: MovieEntity) {
         currentMovie = movie
 
         binding.apply {
@@ -103,9 +121,7 @@ class DetailActivity : AppCompatActivity() {
                     getString(R.string.rating_placeholder, movie.vote_average.toString())
                 tvLanguage.text = getString(R.string.language_placeholder, movie.original_language)
 
-                tvGenre.text = movie.genres?.joinToString {
-                    it.name
-                }
+                tvGenre.text = movie.genres
 
                 tvDescription.text = movie.overview
             }
