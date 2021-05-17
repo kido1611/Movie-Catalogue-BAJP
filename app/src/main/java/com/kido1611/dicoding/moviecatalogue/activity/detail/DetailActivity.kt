@@ -1,6 +1,7 @@
 package com.kido1611.dicoding.moviecatalogue.activity.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,7 @@ import androidx.core.app.ShareCompat
 import androidx.core.view.isVisible
 import com.kido1611.dicoding.moviecatalogue.R
 import com.kido1611.dicoding.moviecatalogue.data.source.UIState
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieBookmark
 import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
 import com.kido1611.dicoding.moviecatalogue.databinding.ActivityDetailBinding
 import com.kido1611.dicoding.moviecatalogue.extension.loadImageFromTMDB
@@ -57,6 +59,21 @@ class DetailActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            fabFavorite.setOnClickListener {
+                viewModel.toggleFavorite(
+                    MovieBookmark(
+                        first_air_date = currentMovie.first_air_date,
+                        is_movie = currentMovie.is_movie,
+                        name = currentMovie.name,
+                        movie_id = currentMovie.movie_id,
+                        poster_path = currentMovie.poster_path,
+                        release_date = currentMovie.release_date,
+                        title = currentMovie.title,
+                        vote_average = currentMovie.vote_average
+                    )
+                )
+            }
         }
 
         val isMovie = intent.extras?.getBoolean(EXTRA_IS_MOVIE, true) ?: true
@@ -96,6 +113,12 @@ class DetailActivity : AppCompatActivity() {
                     }
                 }
             }
+
+        viewModel.getBookmarkMovie().observe(this) {
+            Log.e("DetailActivity", "Movie: $it")
+            viewModel.setIsBookmarked(it != null)
+            updateFabFavorite(it != null)
+        }
     }
 
     private fun initView(movie: MovieEntity) {
@@ -126,6 +149,16 @@ class DetailActivity : AppCompatActivity() {
                 tvDescription.text = movie.overview
             }
         }
+    }
+
+    fun updateFabFavorite(isBookmarked: Boolean) {
+        binding.fabFavorite.setImageResource(
+            if (isBookmarked) {
+                R.drawable.ic_baseline_favorite_24_white
+            } else {
+                R.drawable.ic_baseline_favorite_border_24_white
+            }
+        )
     }
 
     private fun showSuccess() {

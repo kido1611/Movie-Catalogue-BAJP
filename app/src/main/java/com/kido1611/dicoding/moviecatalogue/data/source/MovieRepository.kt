@@ -2,27 +2,24 @@ package com.kido1611.dicoding.moviecatalogue.data.source
 
 import androidx.lifecycle.LiveData
 import androidx.paging.*
-import com.kido1611.dicoding.moviecatalogue.data.source.local.TMDBDatabase
+import com.kido1611.dicoding.moviecatalogue.data.source.local.LocalDataSource
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieBookmark
 import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.ApiResponse
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.RemoteDataSource
-import com.kido1611.dicoding.moviecatalogue.data.source.remote.TMDBService
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.entity.MovieResponse
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.mediator.DiscoverMediator
 import com.kido1611.dicoding.moviecatalogue.utils.AppExecutors
 import javax.inject.Inject
 
 class MovieRepository @Inject constructor(
-    private val database: TMDBDatabase,
-    private val service: TMDBService,
     private val appExecutors: AppExecutors,
+    private val localDataSource: LocalDataSource,
     private val remoteDataSource: RemoteDataSource
 ) : MovieDataSource {
     override fun getMovieById(id: Int): LiveData<UIState<MovieEntity>> {
         return object : NetworkBoundResource<MovieEntity, MovieResponse>(appExecutors) {
-            override fun loadFromDB(): LiveData<MovieEntity> {
-                return database.movieDao().getMovieById(id)
-            }
+            override fun loadFromDB(): LiveData<MovieEntity> = localDataSource.getMovieById(id)
 
             override fun shouldFetch(data: MovieEntity?): Boolean = true
 
@@ -31,7 +28,7 @@ class MovieRepository @Inject constructor(
 
             override fun saveCallResult(data: MovieResponse) {
                 val entity = data.toMovieEntity()
-                database.movieDao().updateGenreMovie(id, entity.genres)
+                localDataSource.updateMovieGenre(id, entity.genres)
             }
         }
             .asLiveData()
@@ -39,7 +36,7 @@ class MovieRepository @Inject constructor(
 
     override fun getTvById(id: Int): LiveData<UIState<MovieEntity>> {
         return object : NetworkBoundResource<MovieEntity, MovieResponse>(appExecutors) {
-            override fun loadFromDB(): LiveData<MovieEntity> = database.movieDao().getMovieById(id)
+            override fun loadFromDB(): LiveData<MovieEntity> = localDataSource.getMovieById(id)
 
             override fun shouldFetch(data: MovieEntity?): Boolean = true
 
@@ -48,44 +45,57 @@ class MovieRepository @Inject constructor(
 
             override fun saveCallResult(data: MovieResponse) {
                 val entity = data.toMovieEntity()
-                database.movieDao().updateGenreMovie(id, entity.genres)
+                localDataSource.updateMovieGenre(id, entity.genres)
             }
         }
             .asLiveData()
     }
 
-
     @ExperimentalPagingApi
     override fun getDiscoverMovieMediator(): LiveData<PagingData<MovieEntity>> {
-        val movieDao = database.movieDao()
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
                 enablePlaceholders = false
             ),
             remoteMediator = DiscoverMediator(
-                true, database, service
+                true, localDataSource.getDatabase(), remoteDataSource.getService()
             )
         ) {
-            movieDao.getMovies()
+            localDataSource.getMovies()
         }
             .liveData
     }
 
     @ExperimentalPagingApi
     override fun getDiscoverTvMediator(): LiveData<PagingData<MovieEntity>> {
-        val movieDao = database.movieDao()
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
                 enablePlaceholders = false
             ),
             remoteMediator = DiscoverMediator(
-                false, database, service
+                false, localDataSource.getDatabase(), remoteDataSource.getService()
             )
         ) {
-            movieDao.getTvs()
+            localDataSource.getTvs()
         }
             .liveData
+    }
+
+    override fun addBookmarkMovie(movie: MovieBookmark) {
+        appExecutors.diskIO().execute {
+            localDataSource.addBookmarkMovie(movie)
+        }
+    }
+
+    override fun deleteBookmarkMovie(movieId: Int) {
+        appExecutors.diskIO().execute {
+            localDataSource.removeBookmarkMovie(movieId)
+        }
+    }
+
+    override fun getBookmarkMovie(movieId: Int): LiveData<MovieBookmark> {
+        return localDataSource.getMovieBookmarked(movieId)
     }
 }

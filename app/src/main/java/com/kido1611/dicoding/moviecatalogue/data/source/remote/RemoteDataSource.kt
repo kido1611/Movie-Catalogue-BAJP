@@ -14,6 +14,8 @@ import javax.inject.Singleton
 class RemoteDataSource @Inject constructor(
     private val service: TMDBService
 ) {
+    fun getService(): TMDBService = service
+
     fun getMovieById(id: Int): LiveData<ApiResponse<MovieResponse>> {
         EspressoIdlingResource.increment()
         val result = MutableLiveData<ApiResponse<MovieResponse>>()

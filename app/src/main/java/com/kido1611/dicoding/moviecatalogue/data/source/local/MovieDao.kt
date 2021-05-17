@@ -3,6 +3,7 @@ package com.kido1611.dicoding.moviecatalogue.data.source.local
 import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.*
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieBookmark
 import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
 import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieRemoteKey
 
@@ -53,4 +54,19 @@ interface MovieDao {
 
     @Query("delete from movie_remote_keys where is_movie = 0")
     fun deleteTvRemoteKeys()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertMovieBookmark(movie: MovieBookmark)
+
+    @Query("select * from bookmark_movies where movie_id = :movieId")
+    fun getMovieBookmarkById(movieId: Int): LiveData<MovieBookmark>
+
+    @Query("select * from bookmark_movies where is_movie = 1")
+    fun getBookmarkedMovies(): PagingSource<Int, MovieBookmark>
+
+    @Query("select * from bookmark_movies where is_movie = 0")
+    fun getBookmarkedTvs(): PagingSource<Int, MovieBookmark>
+
+    @Query("delete from bookmark_movies where movie_id = :movieId")
+    fun deleteMovieBookmarkedById(movieId: Int)
 }
