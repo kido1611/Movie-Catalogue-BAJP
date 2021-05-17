@@ -12,9 +12,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MovieCatalogue">
-        <activity android:name="com.kido1611.dicoding.moviecatalogue.activity.detail.DetailActivity"
-            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"/>
-        <activity android:name="com.kido1611.dicoding.moviecatalogue.activity.home.HomeActivity">
+        <activity
+            android:name=".activity.bookmark.BookmarkActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <activity
+            android:name=".activity.detail.DetailActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+        <activity android:name=".activity.home.HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

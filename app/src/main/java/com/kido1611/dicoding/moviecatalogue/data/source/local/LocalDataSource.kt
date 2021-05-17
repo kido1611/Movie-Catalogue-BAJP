@@ -31,4 +31,8 @@ class LocalDataSource @Inject constructor(
     }
 
     fun getMovieBookmarked(movieId: Int) = getMovieDao().getMovieBookmarkById(movieId)
+
+    fun getBookmarkedMovies() = getMovieDao().getBookmarkedMovies()
+
+    fun getBookmarkedTvs() = getMovieDao().getBookmarkedTvs()
 }

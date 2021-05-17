@@ -98,4 +98,30 @@ class MovieRepository @Inject constructor(
     override fun getBookmarkMovie(movieId: Int): LiveData<MovieBookmark> {
         return localDataSource.getMovieBookmarked(movieId)
     }
+
+    override fun getBookmarkedMovies(): LiveData<PagingData<MovieBookmark>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = {
+                localDataSource.getBookmarkedMovies()
+            }
+        )
+            .liveData
+    }
+
+    override fun getBookmarkedTvs(): LiveData<PagingData<MovieBookmark>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = {
+                localDataSource.getBookmarkedTvs()
+            }
+        )
+            .liveData
+    }
 }

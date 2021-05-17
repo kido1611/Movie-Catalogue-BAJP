@@ -61,10 +61,10 @@ interface MovieDao {
     @Query("select * from bookmark_movies where movie_id = :movieId")
     fun getMovieBookmarkById(movieId: Int): LiveData<MovieBookmark>
 
-    @Query("select * from bookmark_movies where is_movie = 1")
+    @Query("select * from bookmark_movies where is_movie = 1 order by id desc")
     fun getBookmarkedMovies(): PagingSource<Int, MovieBookmark>
 
-    @Query("select * from bookmark_movies where is_movie = 0")
+    @Query("select * from bookmark_movies where is_movie = 0 order by id desc")
     fun getBookmarkedTvs(): PagingSource<Int, MovieBookmark>
 
     @Query("delete from bookmark_movies where movie_id = :movieId")

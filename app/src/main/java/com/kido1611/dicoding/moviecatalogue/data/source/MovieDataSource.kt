@@ -15,5 +15,8 @@ interface MovieDataSource {
     fun addBookmarkMovie(movie: MovieBookmark)
     fun deleteBookmarkMovie(movieId: Int)
     fun getBookmarkMovie(movieId: Int): LiveData<MovieBookmark>
+
+    fun getBookmarkedMovies(): LiveData<PagingData<MovieBookmark>>
+    fun getBookmarkedTvs(): LiveData<PagingData<MovieBookmark>>
 }
 

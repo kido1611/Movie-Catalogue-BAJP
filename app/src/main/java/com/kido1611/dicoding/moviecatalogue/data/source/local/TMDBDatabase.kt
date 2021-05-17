@@ -12,7 +12,7 @@ import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieRemote
         MovieRemoteKey::class,
         MovieBookmark::class
     ],
-    version = 12,
+    version = 14,
     exportSchema = false
 )
 abstract class TMDBDatabase : RoomDatabase() {

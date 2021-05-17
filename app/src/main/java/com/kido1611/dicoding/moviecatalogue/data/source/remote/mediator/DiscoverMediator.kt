@@ -61,7 +61,7 @@ class DiscoverMediator(
                 newList.add(data)
                 index++
             }
-            val endOfPagination = newList.isEmpty()
+            val endOfPagination = page == 1000 // reachable page from TMDB
 
             database.withTransaction {
                 if (loadType == LoadType.REFRESH && !endOfPagination) {

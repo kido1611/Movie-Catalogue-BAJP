@@ -1,7 +1,6 @@
 package com.kido1611.dicoding.moviecatalogue.activity.detail
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -70,7 +69,8 @@ class DetailActivity : AppCompatActivity() {
                         poster_path = currentMovie.poster_path,
                         release_date = currentMovie.release_date,
                         title = currentMovie.title,
-                        vote_average = currentMovie.vote_average
+                        vote_average = currentMovie.vote_average,
+                        overview = currentMovie.overview
                     )
                 )
             }
@@ -115,7 +115,6 @@ class DetailActivity : AppCompatActivity() {
             }
 
         viewModel.getBookmarkMovie().observe(this) {
-            Log.e("DetailActivity", "Movie: $it")
             viewModel.setIsBookmarked(it != null)
             updateFabFavorite(it != null)
         }

@@ -15,5 +15,7 @@
     <string name="genre">Genre</string>
     <string name="failed_update_data">Gagal memperbarui data</string>
     <string name="load_state_error">Tidak bisa mengambil data</string>
+    <string name="list_empty">Tidak ada data</string>
     <string name="save_movie">Simpan movie</string>
+    <string name="bookmark">Simpan</string>
 </resources>
