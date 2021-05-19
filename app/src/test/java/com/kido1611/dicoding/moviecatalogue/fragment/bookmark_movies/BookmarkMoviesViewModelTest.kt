@@ -1,4 +1,4 @@
-package com.kido1611.dicoding.moviecatalogue.fragment.tvs
+package com.kido1611.dicoding.moviecatalogue.fragment.bookmark_movies
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
@@ -6,7 +6,7 @@ import androidx.lifecycle.Observer
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
-import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieBookmark
 import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
 import com.kido1611.dicoding.moviecatalogue.utils.PagedAdapterTest
 import com.kido1611.dicoding.moviecatalogue.utils.TestCoroutineRule
@@ -23,15 +23,15 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-@ExperimentalCoroutinesApi
 @ExperimentalPagingApi
+@ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class TvsViewModelTest {
-    private lateinit var viewModel: TvsViewModel
+class BookmarkMoviesViewModelTest {
+    private lateinit var viewModel: BookmarkMoviesViewModel
 
     @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
+    var instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @get:Rule
     val testCoroutineRule = TestCoroutineRule()
@@ -40,29 +40,29 @@ class TvsViewModelTest {
     private lateinit var repository: MovieRepository
 
     @MockK
-    private lateinit var observer: Observer<PagingData<MovieEntity>>
+    private lateinit var observer: Observer<PagingData<MovieBookmark>>
 
-    private lateinit var captureSlot: CapturingSlot<PagingData<MovieEntity>>
-    private lateinit var adapter: PagedAdapterTest<MovieEntity>
+    private lateinit var captureSlot: CapturingSlot<PagingData<MovieBookmark>>
+    private lateinit var adapter: PagedAdapterTest<MovieBookmark>
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         repository = mockk(relaxed = true)
-        viewModel = TvsViewModel(repository)
+        viewModel = BookmarkMoviesViewModel(repository)
         adapter = PagedAdapterTest()
         captureSlot = slot()
     }
 
     @Test
-    fun `tvs list() should result data`() = runTest(testCoroutineRule) {
-        val dummyResult = MutableLiveData<PagingData<MovieEntity>>()
-        val dummyTvs = DataDummy.generateDummyMovieEntities(false)
-        val dummyPagingData = PagingData.from(dummyTvs)
+    fun `bookmarked movies list() should result data`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<PagingData<MovieBookmark>>()
+        val dummyMovies = DataDummy.generateDummyMovieBookmarks(true)
+        val dummyPagingData = PagingData.from(dummyMovies)
         dummyResult.value = dummyPagingData
 
         every {
-            repository.getDiscoverTvMediator()
+            repository.getBookmarkedMovies()
         } returns dummyResult
         every {
             observer.onChanged(capture(captureSlot))
@@ -71,25 +71,27 @@ class TvsViewModelTest {
         viewModel.loadList()
         val result = viewModel.list()
         result.observeForever(observer)
-        verify(exactly = 1) { repository.getDiscoverTvMediator() }
+        verify(exactly = 1) {
+            repository.getBookmarkedMovies()
+        }
 
         launch {
             adapter.submitData(captureSlot.captured)
         }
-        Assert.assertEquals(adapter.itemCount, dummyTvs.size)
+        Assert.assertEquals(adapter.itemCount, dummyMovies.size)
 
         confirmVerified(repository)
     }
 
     @Test
-    fun `tvs list() should return empty data`() = runTest(testCoroutineRule) {
-        val dummyResult = MutableLiveData<PagingData<MovieEntity>>()
-        val dummyTvs = emptyList<MovieEntity>()
-        val dummyPagingData = PagingData.from(dummyTvs)
+    fun `bookmarked movies list() should result empty data`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<PagingData<MovieBookmark>>()
+        val dummyMovies = emptyList<MovieBookmark>()
+        val dummyPagingData = PagingData.from(dummyMovies)
         dummyResult.value = dummyPagingData
 
         every {
-            repository.getDiscoverTvMediator()
+            repository.getBookmarkedMovies()
         } returns dummyResult
         every {
             observer.onChanged(capture(captureSlot))
@@ -98,12 +100,14 @@ class TvsViewModelTest {
         viewModel.loadList()
         val result = viewModel.list()
         result.observeForever(observer)
-        verify(exactly = 1) { repository.getDiscoverTvMediator() }
+        verify(exactly = 1) {
+            repository.getBookmarkedMovies()
+        }
 
         launch {
             adapter.submitData(captureSlot.captured)
         }
-        Assert.assertEquals(adapter.itemCount, 0)
+        Assert.assertEquals(adapter.itemCount, dummyMovies.size)
 
         confirmVerified(repository)
     }

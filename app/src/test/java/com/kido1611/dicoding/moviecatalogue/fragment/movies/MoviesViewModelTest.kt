@@ -1,88 +1,110 @@
 package com.kido1611.dicoding.moviecatalogue.fragment.movies
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.PagingData
 import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
-import com.kido1611.dicoding.moviecatalogue.data.source.UIState
-import com.kido1611.dicoding.moviecatalogue.model.Movie
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
 import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
-import junit.framework.TestCase.*
-import kotlinx.coroutines.runBlocking
+import com.kido1611.dicoding.moviecatalogue.utils.PagedAdapterTest
+import com.kido1611.dicoding.moviecatalogue.utils.TestCoroutineRule
+import com.kido1611.dicoding.moviecatalogue.utils.runTest
+import io.mockk.*
+import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import org.junit.Assert
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
-@RunWith(MockitoJUnitRunner::class)
+@ExperimentalCoroutinesApi
+@ExperimentalPagingApi
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class MoviesViewModelTest {
     private lateinit var viewModel: MoviesViewModel
 
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @Mock
+    @get:Rule
+    val testCoroutineRule = TestCoroutineRule()
+
+    @MockK
     private lateinit var repository: MovieRepository
 
-    @Mock
-    private lateinit var observer: Observer<UIState<List<Movie>>>
+    @MockK
+    private lateinit var observer: Observer<PagingData<MovieEntity>>
 
-    @Test
-    fun testGetMovies() {
-        val dummyMovies = DataDummy.generateDummyMovies()
-        val dummySuccess = UIState.Success(dummyMovies)
-        val dummyResult = MutableLiveData<UIState<List<Movie>>>()
-        dummyResult.value = dummySuccess
+    private lateinit var captureSlot: CapturingSlot<PagingData<MovieEntity>>
+    private lateinit var adapter: PagedAdapterTest<MovieEntity>
 
-        repository = mock()
-        runBlocking {
-            whenever(repository.getDiscoverMovie()).thenReturn(dummyResult)
-        }
+    @Before
+    fun setUp() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        repository = mockk(relaxed = true)
         viewModel = MoviesViewModel(repository)
-
-        val result: LiveData<UIState<List<Movie>>> = viewModel.list
-        assertNotNull(result)
-        verify(repository).getDiscoverMovie()
-        assertTrue(result.value is UIState.Success)
-
-        val movieList = result.value as UIState.Success
-        val movies = movieList.data
-        assertEquals(10, movies.size)
-
-        val movie = movies[0]
-        assertEquals(true, movie.isMovie())
-
-        viewModel.list.observeForever(observer)
-        verify(observer).onChanged(dummySuccess)
+        adapter = PagedAdapterTest()
+        captureSlot = slot()
     }
 
     @Test
-    fun testGetEmptyMovies() {
-        val dummySuccessEmpty = UIState.Success(emptyList<Movie>())
-        val dummyResult = MutableLiveData<UIState<List<Movie>>>()
-        dummyResult.value = dummySuccessEmpty
+    fun `movies list() should return data`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<PagingData<MovieEntity>>()
+        val dummyMovies = DataDummy.generateDummyMovieEntities(true)
+        val dummyPagingData = PagingData.from(dummyMovies)
+        dummyResult.value = dummyPagingData
 
-        repository = mock()
-        runBlocking {
-            whenever(repository.getDiscoverMovie()).thenReturn(dummyResult)
+        every {
+            repository.getDiscoverMovieMediator()
+        } returns dummyResult
+        every {
+            observer.onChanged(capture(captureSlot))
+        } answers { nothing }
+
+        viewModel.loadList()
+        val result = viewModel.list()
+        result.observeForever(observer)
+        verify(exactly = 1) { repository.getDiscoverMovieMediator() }
+
+        launch {
+            adapter.submitData(captureSlot.captured)
         }
-        viewModel = MoviesViewModel(repository)
+        Assert.assertEquals(adapter.itemCount, dummyMovies.size)
 
-        val result: LiveData<UIState<List<Movie>>> = viewModel.list
-        assertNotNull(result)
-        verify(repository).getDiscoverMovie()
-        assertTrue(result.value is UIState.Success)
+        confirmVerified(repository)
+    }
 
-        val movieList = result.value as UIState.Success
-        val movies = movieList.data
-        assertEquals(0, movies.size)
+    @Test
+    fun `movies list() should return empty data`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<PagingData<MovieEntity>>()
+        val dummyMovies = emptyList<MovieEntity>()
+        val dummyPagingData = PagingData.from(dummyMovies)
+        dummyResult.value = dummyPagingData
 
-        viewModel.list.observeForever(observer)
-        verify(observer).onChanged(dummySuccessEmpty)
+        every {
+            repository.getDiscoverMovieMediator()
+        } returns dummyResult
+        every {
+            observer.onChanged(capture(captureSlot))
+        } answers { nothing }
+
+        viewModel.loadList()
+        val result = viewModel.list()
+        result.observeForever(observer)
+        verify(exactly = 1) { repository.getDiscoverMovieMediator() }
+
+        launch {
+            adapter.submitData(captureSlot.captured)
+        }
+        Assert.assertEquals(adapter.itemCount, 0)
+
+        confirmVerified(repository)
     }
 }

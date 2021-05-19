@@ -1,21 +1,24 @@
 package com.kido1611.dicoding.moviecatalogue.data.source
 
 import androidx.lifecycle.LiveData
-import androidx.paging.*
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.PagingData
 import com.kido1611.dicoding.moviecatalogue.data.source.local.LocalDataSource
 import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieBookmark
 import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
+import com.kido1611.dicoding.moviecatalogue.data.source.paging.PagingDataSource
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.ApiResponse
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.RemoteDataSource
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.entity.MovieResponse
-import com.kido1611.dicoding.moviecatalogue.data.source.remote.mediator.DiscoverMediator
 import com.kido1611.dicoding.moviecatalogue.utils.AppExecutors
 import javax.inject.Inject
 
-class MovieRepository @Inject constructor(
+class MovieRepository
+@Inject constructor(
     private val appExecutors: AppExecutors,
     private val localDataSource: LocalDataSource,
-    private val remoteDataSource: RemoteDataSource
+    private val remoteDataSource: RemoteDataSource,
+    private val pagingDataSource: PagingDataSource
 ) : MovieDataSource {
     override fun getMovieById(id: Int): LiveData<UIState<MovieEntity>> {
         return object : NetworkBoundResource<MovieEntity, MovieResponse>(appExecutors) {
@@ -53,34 +56,12 @@ class MovieRepository @Inject constructor(
 
     @ExperimentalPagingApi
     override fun getDiscoverMovieMediator(): LiveData<PagingData<MovieEntity>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 10,
-                enablePlaceholders = false
-            ),
-            remoteMediator = DiscoverMediator(
-                true, localDataSource.getDatabase(), remoteDataSource.getService()
-            )
-        ) {
-            localDataSource.getMovies()
-        }
-            .liveData
+        return pagingDataSource.getDiscoverMovies()
     }
 
     @ExperimentalPagingApi
     override fun getDiscoverTvMediator(): LiveData<PagingData<MovieEntity>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 10,
-                enablePlaceholders = false
-            ),
-            remoteMediator = DiscoverMediator(
-                false, localDataSource.getDatabase(), remoteDataSource.getService()
-            )
-        ) {
-            localDataSource.getTvs()
-        }
-            .liveData
+        return pagingDataSource.getDiscoverTvs()
     }
 
     override fun addBookmarkMovie(movie: MovieBookmark) {
@@ -100,28 +81,10 @@ class MovieRepository @Inject constructor(
     }
 
     override fun getBookmarkedMovies(): LiveData<PagingData<MovieBookmark>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 10,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = {
-                localDataSource.getBookmarkedMovies()
-            }
-        )
-            .liveData
+        return pagingDataSource.getBookmarkedMovies()
     }
 
     override fun getBookmarkedTvs(): LiveData<PagingData<MovieBookmark>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 10,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = {
-                localDataSource.getBookmarkedTvs()
-            }
-        )
-            .liveData
+        return pagingDataSource.getBookmarkedTvs()
     }
 }

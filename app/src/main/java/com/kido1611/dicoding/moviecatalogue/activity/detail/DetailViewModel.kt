@@ -38,7 +38,7 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    fun toggleFavorite(movie: MovieBookmark) {
+    fun toggleBookmark(movie: MovieBookmark) {
         if (_isBookmarked.value == true) {
             repository.deleteBookmarkMovie(movie.movie_id)
         } else {

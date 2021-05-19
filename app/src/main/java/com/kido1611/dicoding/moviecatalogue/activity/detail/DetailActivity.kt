@@ -60,7 +60,7 @@ class DetailActivity : AppCompatActivity() {
             }
 
             fabFavorite.setOnClickListener {
-                viewModel.toggleFavorite(
+                viewModel.toggleBookmark(
                     MovieBookmark(
                         first_air_date = currentMovie.first_air_date,
                         is_movie = currentMovie.is_movie,
@@ -150,7 +150,7 @@ class DetailActivity : AppCompatActivity() {
         }
     }
 
-    fun updateFabFavorite(isBookmarked: Boolean) {
+    private fun updateFabFavorite(isBookmarked: Boolean) {
         binding.fabFavorite.setImageResource(
             if (isBookmarked) {
                 R.drawable.ic_baseline_favorite_24_white

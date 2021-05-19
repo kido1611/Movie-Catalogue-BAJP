@@ -1,137 +1,243 @@
 package com.kido1611.dicoding.moviecatalogue.activity.detail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.kido1611.dicoding.moviecatalogue.data.source.MovieRepository
 import com.kido1611.dicoding.moviecatalogue.data.source.UIState
-import com.kido1611.dicoding.moviecatalogue.model.Movie
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieBookmark
+import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieEntity
 import com.kido1611.dicoding.moviecatalogue.utils.DataDummy
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
-import junit.framework.Assert.assertEquals
-import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.runBlocking
+import com.kido1611.dicoding.moviecatalogue.utils.TestCoroutineRule
+import com.kido1611.dicoding.moviecatalogue.utils.runTest
+import io.mockk.*
+import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
-@RunWith(MockitoJUnitRunner::class)
+@ExperimentalCoroutinesApi
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class DetailViewModelTest {
-
     private lateinit var viewModel: DetailViewModel
-
-    private val dummyMovie = DataDummy.generateDummyMovies()[0]
-    private val dummyTv = DataDummy.generateDummyTv()[0]
-
-    private val movieId = dummyMovie.id
-    private val tvId = dummyTv.id
 
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @Mock
+    @get:Rule
+    val testCoroutineRule = TestCoroutineRule()
+
+    @MockK
     private lateinit var repository: MovieRepository
 
-    @Mock
-    private lateinit var observer: Observer<UIState<Movie>>
+    @MockK
+    private lateinit var observerMovieEntity: Observer<UIState<MovieEntity>>
 
-    private lateinit var dummyMovieSuccess: UIState.Success<Movie>
-    private lateinit var dummyTvSuccess: UIState.Success<Movie>
-    private lateinit var dummyFailed: UIState.Error
+    @MockK
+    private lateinit var observerMovieBookmark: Observer<MovieBookmark>
+
+    private val observerNullMovieBookmark = mockk<Observer<MovieBookmark>> {
+        every {
+            onChanged(any())
+        } just Runs
+    }
+
+    private lateinit var csUiStateMovieEntity: CapturingSlot<UIState<MovieEntity>>
+    private lateinit var csMovieBookmark: CapturingSlot<MovieBookmark>
 
     @Before
-    fun setup() {
-        val resultMovie = MutableLiveData<UIState<Movie>>()
-        dummyMovieSuccess = UIState.Success(dummyMovie)
-        resultMovie.value = dummyMovieSuccess
+    fun setUp() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        repository = mockk(relaxed = true)
+        viewModel = DetailViewModel(repository)
+        csUiStateMovieEntity = slot()
+        csMovieBookmark = slot()
+    }
 
-        val resultTv = MutableLiveData<UIState<Movie>>()
-        dummyTvSuccess = UIState.Success(dummyTv)
-        resultTv.value = dummyTvSuccess
+    @Test
+    fun `getMovie() should return movie data`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<UIState<MovieEntity>>()
+        val dummyMovie = DataDummy.generateDummyMovieEntity(0, true)
+        dummyResult.value = UIState.Success(dummyMovie)
 
-        dummyFailed = UIState.Error("Error")
+        val selectedMovieId = dummyMovie.movie_id
 
-        repository = mock()
-        runBlocking {
-            whenever(repository.getMovieById(movieId)).thenReturn(resultMovie)
-            whenever(repository.getTvById(tvId)).thenReturn(resultTv)
+        every {
+            repository.getMovieById(selectedMovieId)
+        } returns dummyResult
+        every {
+            observerMovieEntity.onChanged(capture(csUiStateMovieEntity))
+        } answers { nothing }
+
+        viewModel.setMovie(true, selectedMovieId)
+        val resultLiveData = viewModel.getMovie()
+        resultLiveData.observeForever(observerMovieEntity)
+        verify(exactly = 1) { repository.getMovieById(selectedMovieId) }
+
+        Assert.assertTrue(csUiStateMovieEntity.captured is UIState.Success)
+        val result = csUiStateMovieEntity.captured as UIState.Success
+        val movie = result.data
+        Assert.assertTrue(movie.isMovie())
+    }
+
+    @Test
+    fun `getMovie() should return tv show data`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<UIState<MovieEntity>>()
+        val dummyMovie = DataDummy.generateDummyMovieEntity(0, false)
+        dummyResult.value = UIState.Success(dummyMovie)
+
+        val selectedMovieId = dummyMovie.movie_id
+
+        every {
+            repository.getTvById(selectedMovieId)
+        } returns dummyResult
+        every {
+            observerMovieEntity.onChanged(capture(csUiStateMovieEntity))
+        } answers { nothing }
+
+        viewModel.setMovie(false, selectedMovieId)
+        val resultLiveData = viewModel.getMovie()
+        resultLiveData.observeForever(observerMovieEntity)
+        verify(exactly = 1) { repository.getTvById(selectedMovieId) }
+
+        Assert.assertTrue(csUiStateMovieEntity.captured is UIState.Success)
+        val result = csUiStateMovieEntity.captured as UIState.Success
+        val movie = result.data
+        Assert.assertFalse(movie.isMovie())
+    }
+
+    @Test
+    fun `getMovie() should return error movie result`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<UIState<MovieEntity>>()
+        dummyResult.value = UIState.Error("Error")
+
+        val selectedMovieId = 1
+
+        every {
+            repository.getMovieById(selectedMovieId)
+        } returns dummyResult
+        every {
+            observerMovieEntity.onChanged(capture(csUiStateMovieEntity))
+        } answers { nothing }
+
+        viewModel.setMovie(true, selectedMovieId)
+        val resultLiveData = viewModel.getMovie()
+        resultLiveData.observeForever(observerMovieEntity)
+        verify(exactly = 1) { repository.getMovieById(selectedMovieId) }
+
+        Assert.assertTrue(csUiStateMovieEntity.captured is UIState.Error)
+        val result = csUiStateMovieEntity.captured as UIState.Error
+        val message = result.message
+        Assert.assertEquals(message, "Error")
+    }
+
+    @Test
+    fun `getMovie() should return error tv result`() = runTest(testCoroutineRule) {
+        val dummyResult = MutableLiveData<UIState<MovieEntity>>()
+        dummyResult.value = UIState.Error("Error")
+
+        val selectedMovieId = 1
+
+        every {
+            repository.getTvById(selectedMovieId)
+        } returns dummyResult
+        every {
+            observerMovieEntity.onChanged(capture(csUiStateMovieEntity))
+        } answers { nothing }
+
+        viewModel.setMovie(false, selectedMovieId)
+        val resultLiveData = viewModel.getMovie()
+        resultLiveData.observeForever(observerMovieEntity)
+        verify(exactly = 1) { repository.getTvById(selectedMovieId) }
+
+        Assert.assertTrue(csUiStateMovieEntity.captured is UIState.Error)
+        val result = csUiStateMovieEntity.captured as UIState.Error
+        val message = result.message
+        Assert.assertEquals(message, "Error")
+    }
+
+    @Test
+    fun `toggleBookmark() should call addBookmarkMovie() when movie not bookmarked`() =
+        runTest(testCoroutineRule) {
+            val dummyResult = MutableLiveData<MovieBookmark>()
+            val dummyMovieBookmark = DataDummy.generateDummyMovieBookmark(0, true)
+            dummyResult.value = dummyMovieBookmark
+            every {
+                repository.addBookmarkMovie(dummyMovieBookmark)
+            } answers { nothing }
+
+            viewModel.setIsBookmarked(false)
+            viewModel.toggleBookmark(dummyMovieBookmark)
+            verify(exactly = 1) { repository.addBookmarkMovie(dummyMovieBookmark) }
         }
 
-        viewModel = DetailViewModel(repository)
-    }
+    @Test
+    fun `toggleBookmark() should call deleteBookmarkMovie() when movie bookmarked`() =
+        runTest(testCoroutineRule) {
+            val dummyResult = MutableLiveData<MovieBookmark>()
+            val dummyMovieBookmark = DataDummy.generateDummyMovieBookmark(0, true)
+            dummyResult.value = dummyMovieBookmark
+
+            val movieId = dummyMovieBookmark.movie_id
+
+            every {
+                repository.deleteBookmarkMovie(movieId)
+            } answers { nothing }
+
+            viewModel.setIsBookmarked(true)
+            viewModel.toggleBookmark(dummyMovieBookmark)
+            verify(exactly = 1) { repository.deleteBookmarkMovie(movieId) }
+        }
 
     @Test
-    fun testGetMovie() {
-        viewModel.setMovie(true, movieId)
+    fun `getBookmarkMovie() should return data when movie bookmarked`() =
+        runTest(testCoroutineRule) {
+            val dummyResult = MutableLiveData<MovieBookmark>()
+            val dummyMovieBookmark = DataDummy.generateDummyMovieBookmark(0, true)
+            dummyResult.value = dummyMovieBookmark
 
-        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
-        Assert.assertNotNull(result)
-        verify(repository).getMovieById(movieId)
-        assertTrue(result.value is UIState.Success)
+            val selectedMovieId = dummyMovieBookmark.movie_id
+            every {
+                repository.getBookmarkMovie(selectedMovieId)
+            } returns dummyResult
+            every {
+                observerMovieBookmark.onChanged(capture(csMovieBookmark))
+            } answers { nothing }
 
-        val movie = (result.value as UIState.Success).data
-        assertEquals(true, movie.isMovie())
-        assertEquals(dummyMovie.title, movie.title)
-        assertEquals(dummyMovie.id, movie.id)
+            viewModel.setMovie(false, selectedMovieId)
+            val result = viewModel.getBookmarkMovie()
+            result.observeForever(observerMovieBookmark)
+            verify(exactly = 1) { repository.getBookmarkMovie(selectedMovieId) }
 
-        viewModel.getMovie().observeForever(observer)
-        verify(observer).onChanged(dummyMovieSuccess)
-    }
-
-    @Test
-    fun testGetTv() {
-        viewModel.setMovie(false, tvId)
-
-        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
-        Assert.assertNotNull(result)
-        verify(repository).getTvById(tvId)
-        assertTrue(result.value is UIState.Success)
-
-        val tv = (result.value as UIState.Success).data
-        assertEquals(false, tv.isMovie())
-        assertEquals(dummyTv.title, tv.title)
-        assertEquals(dummyTv.id, tv.id)
-
-        viewModel.getMovie().observeForever(observer)
-        verify(observer).onChanged(dummyTvSuccess)
-    }
+            Assert.assertNotNull(csMovieBookmark.captured)
+        }
 
     @Test
-    fun testMovieNotFound() {
-        viewModel.setMovie(true, 112346)
-        val responseResult = MutableLiveData<UIState<Movie>>()
-        responseResult.value = UIState.Error("Error")
+    fun `getBookmarkMovie() should return null when movie not bookmarked`() =
+        runTest(testCoroutineRule) {
+            val dummyResult = MutableLiveData<MovieBookmark>()
+            dummyResult.value = null
 
-        whenever(repository.getMovieById(112346)).thenReturn(responseResult)
-        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
-        Assert.assertNotNull(result)
-        verify(repository).getMovieById(112346)
-        assertTrue(result.value is UIState.Error)
+            val dummyMovieBookmark = DataDummy.generateDummyMovieBookmark(0, true)
+            val selectedMovieId = dummyMovieBookmark.movie_id
 
-        viewModel.getMovie().observeForever(observer)
-        verify(observer).onChanged(dummyFailed)
-    }
+            every {
+                repository.getBookmarkMovie(selectedMovieId)
+            } returns dummyResult
 
-    @Test
-    fun testTvNotFound() {
-        viewModel.setMovie(false, 112346)
-        val responseResult = MutableLiveData<UIState<Movie>>()
-        responseResult.value = UIState.Error("Error")
+            viewModel.setMovie(false, selectedMovieId)
+            val result = viewModel.getBookmarkMovie()
+            result.observeForever(observerNullMovieBookmark)
+            verify(exactly = 1) { repository.getBookmarkMovie(selectedMovieId) }
 
-        whenever(repository.getTvById(112346)).thenReturn(responseResult)
-        val result: LiveData<UIState<Movie>> = viewModel.getMovie()
-        Assert.assertNotNull(result)
-        verify(repository).getTvById(112346)
-        assertTrue(result.value is UIState.Error)
-
-        viewModel.getMovie().observeForever(observer)
-        verify(observer).onChanged(dummyFailed)
-    }
+            verifySequence {
+                observerNullMovieBookmark.onChanged(null)
+            }
+        }
 }

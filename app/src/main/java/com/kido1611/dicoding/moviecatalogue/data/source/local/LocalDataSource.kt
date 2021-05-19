@@ -1,18 +1,18 @@
 package com.kido1611.dicoding.moviecatalogue.data.source.local
 
 import com.kido1611.dicoding.moviecatalogue.data.source.local.entity.MovieBookmark
+import com.kido1611.dicoding.moviecatalogue.utils.AppExecutors
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LocalDataSource @Inject constructor(
-    private val database: TMDBDatabase
+    private val database: TMDBDatabase,
+    private val appExecutors: AppExecutors
 ) {
-    fun getDatabase(): TMDBDatabase = database
+    private fun getDatabase(): TMDBDatabase = database
 
     private fun getMovieDao(): MovieDao = getDatabase().movieDao()
-
-    fun getMovies() = getMovieDao().getMovies()
 
     fun getTvs() = getMovieDao().getTvs()
 
@@ -23,11 +23,15 @@ class LocalDataSource @Inject constructor(
     }
 
     fun addBookmarkMovie(movie: MovieBookmark) {
-        getMovieDao().insertMovieBookmark(movie)
+        appExecutors.diskIO().execute {
+            getMovieDao().insertMovieBookmark(movie)
+        }
     }
 
     fun removeBookmarkMovie(movieId: Int) {
-        getMovieDao().deleteMovieBookmarkedById(movieId)
+        appExecutors.diskIO().execute {
+            getMovieDao().deleteMovieBookmarkedById(movieId)
+        }
     }
 
     fun getMovieBookmarked(movieId: Int) = getMovieDao().getMovieBookmarkById(movieId)
