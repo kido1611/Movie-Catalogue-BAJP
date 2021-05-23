@@ -52,6 +52,7 @@ dependencies {
 
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    //noinspection GradleDependency
     implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
 
     //noinspection GradleDependency
@@ -80,13 +81,6 @@ dependencies {
     androidTestImplementation "androidx.test:rules:$androidXTestVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
-//
-//    testImplementation "org.mockito:mockito-core:$mockitoVersion"
-//    testImplementation "org.mockito:mockito-inline:$mockitoVersion"
-//
 
-//    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlinVersion"
-
-    //noinspection GradleDependency
     implementation "androidx.test.espresso:espresso-idling-resource:$idleResourceVersion"
 }
