@@ -8,6 +8,7 @@ import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.ViewAssertion
+import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
@@ -328,6 +329,82 @@ class HomeActivityTest {
             check(ViewTagAssertion("bookmarked"))
             perform(click())
             check(ViewTagAssertion("un-bookmarked"))
+        }
+    }
+
+    @Test
+    fun testRefreshMovies() {
+        onView(withText("MOVIES")).apply {
+            check(matches(isDisplayed()))
+            perform(click())
+        }
+
+        onView(withId(R.id.rv_movies)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.swipe_refresh_layout_movies)).apply {
+            check(matches(isDisplayed()))
+            perform(ViewActions.swipeDown())
+        }
+    }
+
+    @Test
+    fun testRefreshTvs() {
+        onView(withText("TV SHOWS")).apply {
+            check(matches(isDisplayed()))
+            perform(click())
+        }
+
+        onView(withId(R.id.rv_tvs)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.swipe_refresh_layout_tvs)).apply {
+            check(matches(isDisplayed()))
+            perform(ViewActions.swipeDown())
+        }
+    }
+
+    @Test
+    fun testRefreshBookmarkedMovies() {
+        onView(withId(R.id.menu_bookmark)).apply {
+            check(matches(isDisplayed()))
+            perform(click())
+        }
+
+        onView(withText("Simpan"))
+            .check(matches(isDisplayed()))
+
+        onView(withText("MOVIES")).apply {
+            check(matches(isDisplayed()))
+            perform(click())
+        }
+
+        onView(withId(R.id.rv_movies)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.swipe_refresh_layout_movies)).apply {
+            check(matches(isDisplayed()))
+            perform(ViewActions.swipeDown())
+        }
+    }
+
+    @Test
+    fun testRefreshBookmarkedTvs() {
+        onView(withId(R.id.menu_bookmark)).apply {
+            check(matches(isDisplayed()))
+            perform(click())
+        }
+
+        onView(withText("Simpan"))
+            .check(matches(isDisplayed()))
+
+        onView(withText("TV SHOWS")).apply {
+            check(matches(isDisplayed()))
+            perform(click())
+        }
+
+        onView(withId(R.id.rv_tvs)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.swipe_refresh_layout_tvs)).apply {
+            check(matches(isDisplayed()))
+            perform(ViewActions.swipeDown())
         }
     }
 }

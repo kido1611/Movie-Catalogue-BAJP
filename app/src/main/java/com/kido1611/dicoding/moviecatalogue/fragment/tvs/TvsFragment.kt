@@ -58,8 +58,8 @@ class TvsFragment : Fragment() {
                 }
             }
 
-            binding.swipeRefreshLayout.isRefreshing =
-                isRefresh && binding.swipeRefreshLayout.isRefreshing
+            binding.swipeRefreshLayoutTvs.isRefreshing =
+                isRefresh && binding.swipeRefreshLayoutTvs.isRefreshing
         }
 
         binding.apply {
@@ -71,7 +71,7 @@ class TvsFragment : Fragment() {
                     })
                 setHasFixedSize(true)
             }
-            swipeRefreshLayout.setOnRefreshListener {
+            swipeRefreshLayoutTvs.setOnRefreshListener {
                 movieAdapter.refresh()
             }
             btnRetry.setOnClickListener {

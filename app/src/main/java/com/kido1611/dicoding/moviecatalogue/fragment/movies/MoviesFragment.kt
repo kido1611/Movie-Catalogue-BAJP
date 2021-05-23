@@ -57,8 +57,8 @@ class MoviesFragment : Fragment() {
                 }
             }
 
-            binding.swipeRefreshLayout.isRefreshing =
-                isRefresh && binding.swipeRefreshLayout.isRefreshing
+            binding.swipeRefreshLayoutMovies.isRefreshing =
+                isRefresh && binding.swipeRefreshLayoutMovies.isRefreshing
         }
 
         binding.apply {
@@ -70,7 +70,7 @@ class MoviesFragment : Fragment() {
                     })
                 setHasFixedSize(true)
             }
-            swipeRefreshLayout.setOnRefreshListener {
+            swipeRefreshLayoutMovies.setOnRefreshListener {
                 movieAdapter.refresh()
             }
             btnRetry.setOnClickListener {
