@@ -158,6 +158,11 @@ class DetailActivity : AppCompatActivity() {
                 R.drawable.ic_baseline_favorite_border_24_white
             }
         )
+        binding.fabFavorite.tag = if (isBookmarked) {
+            "bookmarked"
+        } else {
+            "un-bookmarked"
+        }
     }
 
     private fun showSuccess() {

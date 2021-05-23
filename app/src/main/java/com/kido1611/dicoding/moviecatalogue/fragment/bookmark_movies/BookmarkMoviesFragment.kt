@@ -100,7 +100,6 @@ class BookmarkMoviesFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = false
             groupError.isVisible = false
-            rvMovies.isVisible = true
         }
     }
 
@@ -108,7 +107,6 @@ class BookmarkMoviesFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = true
             groupError.isVisible = false
-            rvMovies.isVisible = false
         }
     }
 
@@ -116,7 +114,6 @@ class BookmarkMoviesFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = false
             groupError.isVisible = true
-            rvMovies.isVisible = false
 
             tvMessage.text = message
         }

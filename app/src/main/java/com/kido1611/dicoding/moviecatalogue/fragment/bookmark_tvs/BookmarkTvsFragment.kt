@@ -101,7 +101,6 @@ class BookmarkTvsFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = false
             groupError.isVisible = false
-            rvTvs.isVisible = true
         }
     }
 
@@ -109,7 +108,6 @@ class BookmarkTvsFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = true
             groupError.isVisible = false
-            rvTvs.isVisible = false
         }
     }
 
@@ -117,7 +115,6 @@ class BookmarkTvsFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = false
             groupError.isVisible = true
-            rvTvs.isVisible = false
 
             tvMessage.text = message
         }

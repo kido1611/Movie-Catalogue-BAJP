@@ -75,11 +75,11 @@ dependencies {
     testImplementation "io.mockk:mockk:$mockkVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
-//    androidTestImplementation "junit:junit:$junitVersion"
-//    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-//    androidTestImplementation "androidx.test:rules:$androidXTestVersion"
-//    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-//    androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
+    androidTestImplementation "junit:junit:$junitVersion"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation "androidx.test:rules:$androidXTestVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
 //
 //    testImplementation "org.mockito:mockito-core:$mockitoVersion"
 //    testImplementation "org.mockito:mockito-inline:$mockitoVersion"
