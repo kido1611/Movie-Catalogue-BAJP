@@ -20,20 +20,17 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MoviesFragment : Fragment() {
 
-    companion object {
-        fun newInstance(): MoviesFragment = MoviesFragment()
-    }
-
     private val viewModel: MoviesViewModel by viewModels()
-    private lateinit var binding: MoviesFragmentBinding
+    private var binding: MoviesFragmentBinding? = null
     private lateinit var movieAdapter: MoviePagingAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = MoviesFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+        val fragmentBinding = MoviesFragmentBinding.inflate(inflater, container, false)
+        binding = fragmentBinding
+        return fragmentBinding.root
     }
 
     @ExperimentalPagingApi
@@ -57,11 +54,13 @@ class MoviesFragment : Fragment() {
                 }
             }
 
-            binding.swipeRefreshLayoutMovies.isRefreshing =
-                isRefresh && binding.swipeRefreshLayoutMovies.isRefreshing
+            binding?.apply {
+                swipeRefreshLayoutMovies.isRefreshing =
+                    isRefresh && swipeRefreshLayoutMovies.isRefreshing
+            }
         }
 
-        binding.apply {
+        binding?.apply {
             rvMovies.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = movieAdapter
@@ -92,7 +91,7 @@ class MoviesFragment : Fragment() {
     }
 
     private fun showSuccess() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = false
             rvMovies.isVisible = true
@@ -100,7 +99,7 @@ class MoviesFragment : Fragment() {
     }
 
     private fun showLoading() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = true
             groupError.isVisible = false
             rvMovies.isVisible = false
@@ -108,13 +107,22 @@ class MoviesFragment : Fragment() {
     }
 
     private fun showError(message: String) {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = true
             rvMovies.isVisible = false
 
             tvMessage.text = message
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    companion object {
+        fun newInstance(): MoviesFragment = MoviesFragment()
     }
 
 }

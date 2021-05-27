@@ -21,20 +21,17 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class TvsFragment : Fragment() {
 
-    companion object {
-        fun newInstance(): TvsFragment = TvsFragment()
-    }
-
     private val viewModel: TvsViewModel by viewModels()
-    private lateinit var binding: TvsFragmentBinding
+    private var binding: TvsFragmentBinding? = null
     private lateinit var movieAdapter: MoviePagingAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = TvsFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+        val fragmentBinding = TvsFragmentBinding.inflate(inflater, container, false)
+        binding = fragmentBinding
+        return fragmentBinding.root
     }
 
     @ExperimentalPagingApi
@@ -58,11 +55,13 @@ class TvsFragment : Fragment() {
                 }
             }
 
-            binding.swipeRefreshLayoutTvs.isRefreshing =
-                isRefresh && binding.swipeRefreshLayoutTvs.isRefreshing
+            binding?.apply {
+                swipeRefreshLayoutTvs.isRefreshing =
+                    isRefresh && swipeRefreshLayoutTvs.isRefreshing
+            }
         }
 
-        binding.apply {
+        binding?.apply {
             rvTvs.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = movieAdapter
@@ -93,7 +92,7 @@ class TvsFragment : Fragment() {
     }
 
     private fun showSuccess() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = false
             rvTvs.isVisible = true
@@ -101,7 +100,7 @@ class TvsFragment : Fragment() {
     }
 
     private fun showLoading() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = true
             groupError.isVisible = false
             rvTvs.isVisible = false
@@ -109,7 +108,7 @@ class TvsFragment : Fragment() {
     }
 
     private fun showError(message: String) {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = true
             rvTvs.isVisible = false
@@ -117,4 +116,14 @@ class TvsFragment : Fragment() {
             tvMessage.text = message
         }
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    companion object {
+        fun newInstance(): TvsFragment = TvsFragment()
+    }
+
 }

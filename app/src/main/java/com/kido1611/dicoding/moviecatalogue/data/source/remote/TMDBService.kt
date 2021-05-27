@@ -28,8 +28,4 @@ interface TMDBService {
         @Path("id") id: Int
     ): Call<MovieResponse>
 
-    @GET("movie/{id}")
-    suspend fun getMovieByIdNoCall(
-        @Path("id") id: Int
-    ): MovieResponse
 }

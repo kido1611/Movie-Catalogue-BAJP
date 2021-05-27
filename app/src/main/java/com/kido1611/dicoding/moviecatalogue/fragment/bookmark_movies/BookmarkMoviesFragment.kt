@@ -20,11 +20,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class BookmarkMoviesFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = BookmarkMoviesFragment()
-    }
-
-    private lateinit var binding: MoviesFragmentBinding
+    private var binding: MoviesFragmentBinding? = null
     private val viewModel: BookmarkMoviesViewModel by viewModels()
 
     private lateinit var movieAdapter: BookmarkPagingAdapter
@@ -33,8 +29,9 @@ class BookmarkMoviesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = MoviesFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+        val fragmentBinding = MoviesFragmentBinding.inflate(inflater, container, false)
+        binding = fragmentBinding
+        return fragmentBinding.root
     }
 
     @ExperimentalPagingApi
@@ -62,11 +59,13 @@ class BookmarkMoviesFragment : Fragment() {
                 }
             }
 
-            binding.swipeRefreshLayoutMovies.isRefreshing =
-                isRefresh && binding.swipeRefreshLayoutMovies.isRefreshing
+            binding?.apply {
+                swipeRefreshLayoutMovies.isRefreshing =
+                    isRefresh && swipeRefreshLayoutMovies.isRefreshing
+            }
         }
 
-        binding.apply {
+        binding?.apply {
             rvMovies.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = movieAdapter
@@ -97,26 +96,35 @@ class BookmarkMoviesFragment : Fragment() {
     }
 
     private fun showSuccess() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = false
         }
     }
 
     private fun showLoading() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = true
             groupError.isVisible = false
         }
     }
 
     private fun showError(message: String) {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = true
 
             tvMessage.text = message
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    companion object {
+        fun newInstance() = BookmarkMoviesFragment()
     }
 
 }

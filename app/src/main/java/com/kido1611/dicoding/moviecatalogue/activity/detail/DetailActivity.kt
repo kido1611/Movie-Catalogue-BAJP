@@ -18,21 +18,17 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class DetailActivity : AppCompatActivity() {
 
-    companion object {
-        const val EXTRA_IS_MOVIE = "extra_is_movie"
-        const val EXTRA_MOVIE_ID = "extra_movie_id"
-    }
-
-    private lateinit var binding: ActivityDetailBinding
+    private var binding: ActivityDetailBinding? = null
     private lateinit var currentMovie: MovieEntity
     private val viewModel: DetailViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDetailBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        val activityBinding = ActivityDetailBinding.inflate(layoutInflater)
+        binding = activityBinding
+        setContentView(activityBinding.root)
 
-        binding.apply {
+        binding?.apply {
             toolbar.apply {
                 setNavigationOnClickListener {
                     onBackPressed()
@@ -123,8 +119,8 @@ class DetailActivity : AppCompatActivity() {
     private fun initView(movie: MovieEntity) {
         currentMovie = movie
 
-        binding.apply {
-            binding.appbar.setExpanded(true)
+        binding?.apply {
+            appbar.setExpanded(true)
             ivBackdrop.loadImageFromTMDB(movie.backdrop_path)
             if (toolbar.menu.findItem(R.id.share_menu) == null) {
                 toolbar.inflateMenu(R.menu.detail_menu)
@@ -151,14 +147,14 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun updateFabFavorite(isBookmarked: Boolean) {
-        binding.fabFavorite.setImageResource(
+        binding?.fabFavorite?.setImageResource(
             if (isBookmarked) {
                 R.drawable.ic_baseline_favorite_24_white
             } else {
                 R.drawable.ic_baseline_favorite_border_24_white
             }
         )
-        binding.fabFavorite.tag = if (isBookmarked) {
+        binding?.fabFavorite?.tag = if (isBookmarked) {
             "bookmarked"
         } else {
             "un-bookmarked"
@@ -166,7 +162,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun showSuccess() {
-        binding.apply {
+        binding?.apply {
             groupError.isVisible = false
             progressBar.isVisible = false
             contentDetail.root.isVisible = true
@@ -174,7 +170,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun showLoading() {
-        binding.apply {
+        binding?.apply {
             groupError.isVisible = false
             progressBar.isVisible = true
             contentDetail.root.isVisible = false
@@ -182,7 +178,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun showError(message: String) {
-        binding.apply {
+        binding?.apply {
             groupError.isVisible = true
             progressBar.isVisible = false
             contentDetail.root.isVisible = false
@@ -190,4 +186,15 @@ class DetailActivity : AppCompatActivity() {
             tvMessage.text = message
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
+    }
+
+    companion object {
+        const val EXTRA_IS_MOVIE = "extra_is_movie"
+        const val EXTRA_MOVIE_ID = "extra_movie_id"
+    }
+
 }

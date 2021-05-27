@@ -15,13 +15,15 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
 
+    private var binding: ActivityHomeBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityHomeBinding.inflate(LayoutInflater.from(this))
-        setContentView(binding.root)
+        val activityBinding = ActivityHomeBinding.inflate(LayoutInflater.from(this))
+        binding = activityBinding
+        setContentView(activityBinding.root)
 
         val adapter = FragmentAdapter(this)
-        binding.apply {
+        binding?.apply {
             vp.adapter = adapter
             vp.isUserInputEnabled = false
             vp.offscreenPageLimit = 2
@@ -54,5 +56,10 @@ class HomeActivity : AppCompatActivity() {
                 false
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }

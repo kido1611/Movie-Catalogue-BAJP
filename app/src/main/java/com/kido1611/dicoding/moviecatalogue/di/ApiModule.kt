@@ -1,5 +1,6 @@
 package com.kido1611.dicoding.moviecatalogue.di
 
+import com.kido1611.dicoding.moviecatalogue.BuildConfig
 import com.kido1611.dicoding.moviecatalogue.data.source.remote.TMDBService
 import dagger.Module
 import dagger.Provides
@@ -26,7 +27,7 @@ class ApiModule {
                 val urlBuilder = it.request()
                     .url
                     .newBuilder()
-                    .addQueryParameter("api_key", "1c6e16dab4582d98a26960d301a3af3f")
+                    .addQueryParameter("api_key", BuildConfig.KEY)
                     .build()
 
                 it.proceed(it.request().newBuilder().url(urlBuilder).build())

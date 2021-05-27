@@ -21,11 +21,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class BookmarkTvsFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = BookmarkTvsFragment()
-    }
-
-    private lateinit var binding: TvsFragmentBinding
+    private var binding: TvsFragmentBinding? = null
     private val viewModel: BookmarkTvsViewModel by viewModels()
 
     private lateinit var movieAdapter: BookmarkPagingAdapter
@@ -34,8 +30,9 @@ class BookmarkTvsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = TvsFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+        val fragmentBinding = TvsFragmentBinding.inflate(inflater, container, false)
+        binding = fragmentBinding
+        return fragmentBinding.root
     }
 
     @ExperimentalPagingApi
@@ -63,11 +60,13 @@ class BookmarkTvsFragment : Fragment() {
                 }
             }
 
-            binding.swipeRefreshLayoutTvs.isRefreshing =
-                isRefresh && binding.swipeRefreshLayoutTvs.isRefreshing
+            binding?.apply {
+                swipeRefreshLayoutTvs.isRefreshing =
+                    isRefresh && swipeRefreshLayoutTvs.isRefreshing
+            }
         }
 
-        binding.apply {
+        binding?.apply {
             rvTvs.apply {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = movieAdapter
@@ -98,26 +97,35 @@ class BookmarkTvsFragment : Fragment() {
     }
 
     private fun showSuccess() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = false
         }
     }
 
     private fun showLoading() {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = true
             groupError.isVisible = false
         }
     }
 
     private fun showError(message: String) {
-        binding.apply {
+        binding?.apply {
             progressBar.isVisible = false
             groupError.isVisible = true
 
             tvMessage.text = message
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    companion object {
+        fun newInstance() = BookmarkTvsFragment()
     }
 
 }

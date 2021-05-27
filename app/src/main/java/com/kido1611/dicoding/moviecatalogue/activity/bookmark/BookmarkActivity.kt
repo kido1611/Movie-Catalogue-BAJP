@@ -10,15 +10,17 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class BookmarkActivity : AppCompatActivity() {
+    private var binding: ActivityBookmarkBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityBookmarkBinding.inflate(
+        val activityBinding = ActivityBookmarkBinding.inflate(
             LayoutInflater.from(this)
         )
-        setContentView(binding.root)
+        binding = activityBinding
+        setContentView(activityBinding.root)
 
         val adapter = BookmarkFragmentAdapter(this)
-        binding.apply {
+        binding?.apply {
             toolbar.setNavigationOnClickListener {
                 finish()
             }
@@ -35,5 +37,10 @@ class BookmarkActivity : AppCompatActivity() {
             }
                 .attach()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }
